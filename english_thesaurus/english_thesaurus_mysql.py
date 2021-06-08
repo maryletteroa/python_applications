@@ -2,7 +2,7 @@
 # @Author: Marylette B. Roa
 # @Date:   2021-06-08 21:35:19
 # @Last Modified by:   Marylette B. Roa
-# @Last Modified time: 2021-06-08 22:21:09
+# @Last Modified time: 2021-06-08 22:33:06
 
 
 import mysql.connector
@@ -24,35 +24,32 @@ def get_keys():
 
 def get_defintions(word):
     query = cursor.execute(f"SELECT Definition FROM Dictionary WHERE Expression = '{word}'")
-    print(query)
     results = cursor.fetchall()
-    return(results)
+    if results:
+        return(results)
+    else:
+        return None
 
 
 def translate(word):
-    keys = get_keys()
-    word = word.lower()
-    if word in keys:
-        definitions = get_defintions(word)
-        return(definitions)
-    elif word.title() in keys:
-        definitions = get_defintions(word)
-        return(definitions)
-    elif word.upper() in keys:
-        definitions = get_defintions(word)
-        return(definitions)
-    elif len(get_close_matches(word, keys)) > 0:
-        word = get_close_matches(word, keys)[0]
-        yn = input(f"Did you mean {word} instead? Enter Y if yes, or N if no. ")
-        if yn == "Y":
-            definitions = get_defintions(word)
-            return(definitions)
-        elif yn == "N":
-            return "The word doesn't exist. Please double check it."
+    definitions = []
+    cases = (word.lower(), word.title(), word.upper())
+    for case in cases:
+        definitions = get_defintions(case)
+        if definitions:
+            return definitions
         else:
-            return "We didn't understand your entry."
-    else:
-        return "The word doesn't exist. Please double check it."
+            keys = get_keys()
+            word = get_close_matches(word, keys)[0]
+            yn = input(f"Did you mean {word} instead? Enter Y if yes, or N if no. ")
+            if yn == "Y":
+                definitions = get_defintions(word)
+                return(definitions)
+            elif yn == "N":
+                return "The word doesn't exist. Please double check it."
+            else:
+                return "We didn't understand your entry."
+    return "The word doesn't exist. Please double check it."
 
 
 word=input("Enter the word: ")
